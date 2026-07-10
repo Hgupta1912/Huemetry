@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          Int          @id @default(autoincrement())
+  email       String       @unique @db.VarChar(255)
+  password    String       @db.VarChar(255)
+  username    String       @unique @db.VarChar(100)
+  isPublic    Boolean      @default(false)
+  createdAt   DateTime     @default(now()) @db.Timestamp(6)
+  projects    Project[]
+  collections Collection[]
+}
+
+model Project {
+  id            Int          @id @default(autoincrement())
+  userId        Int
+  user          User         @relation(fields: [userId], references: [id])
+  title         String       @db.VarChar(255)
+  mediums       String[]
+  subjectMatter String       @db.VarChar(100)
+  mode          String       @db.VarChar(20) // "retrospective" | "progressive"
+  isFinalized   Boolean      @default(false)
+  collaborators String[]
+  createdAt     DateTime     @default(now()) @db.Timestamp(6)
+  artSessions   ArtSession[]
+  collections   Collection[]
+}
+
+model ArtSession {
+  id         Int      @id @default(autoincrement())
+  projectId  Int
+  project    Project  @relation(fields: [projectId], references: [id])
+  imageUrl   String   @db.VarChar(500)
+  isFinal    Boolean  @default(false)
+  hoursSpent Float?
+  comments   String?
+  loggedAt   DateTime @default(now()) @db.Timestamp(6)
+  colors     Color[]
+  busyness   Float?
+}
+
+model Color {
+  id         Int     @id @default(autoincrement())
+  artSessionId Int
+  artSession ArtSession @relation(fields: [artSessionId], references: [id])
+  hex        String  @db.VarChar(7)
+  weight     Float
+  hue        Float
+  saturation Float
+  value      Float
+}
+
+model Collection {
+  id       Int       @id @default(autoincrement())
+  userId   Int
+  user     User      @relation(fields: [userId], references: [id])
+  name     String    @db.VarChar(255)
+  projects Project[]
+}
