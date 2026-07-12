@@ -1,9 +1,5 @@
 const prisma = require('./prisma.js');
 
-const findUserByEmail = async (email) => prisma.user.findUnique({ where: { email } });
-const findUserByUsername = async (username) => prisma.user.findUnique({ where: { username } });
-const createUser = async (data) => prisma.user.create({ data });
-
 const createProject = (userId, data) =>
   prisma.project.create({ data: { ...data, userId } });
 
@@ -90,8 +86,8 @@ const deleteReference = (projectId) =>
     where: { projectId },
   });
 
-const createCollection = (userId, name) =>
-  prisma.collection.create({ data: { userId, name } });
+const createCollection = (userId, name, isPublic = false) =>
+  prisma.collection.create({ data: { userId, name, isPublic } });
 
 const findCollectionsByUser = (userId) =>
   prisma.collection.findMany({
@@ -111,10 +107,10 @@ const findCollectionById = (id, userId) =>
       },
     },
   });
-const updateCollectionName = (id, userId, name) =>
+const updateCollection = (id, userId, data) =>
   prisma.collection.updateMany({
     where: { id, userId },
-    data: { name },
+    data,
   });
 
 const deleteCollection = (id, userId) =>
@@ -134,10 +130,77 @@ const removeProjectFromCollection = (collectionId, projectId, userId) =>
     data: { projects: { disconnect: { id: projectId } } },
   });
 
+const findUserByEmail = async (email) => prisma.user.findUnique({ where: { email } });
+const findUserByUsername = async (username) => prisma.user.findUnique({ where: { username } });
+const createUser = async (data) => prisma.user.create({ data });
+
+const findUserById = (id) =>
+  prisma.user.findUnique({
+    where: { id },
+    select: { id: true, email: true, username: true, isPublic: true, createdAt: true },
+  });
+
+const findPublicUserByUsername = (username) =>
+  prisma.user.findFirst({
+    where: { username, isPublic: true },
+    select: {
+      id: true,
+      username: true,
+      createdAt: true,
+      projects: {
+        where: { isFinalized: true, isPublic: true },
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          title: true,
+          mediums: true,
+          genres: true,
+          substrates: true,
+          dimensions: true,
+          artSessions: {
+            orderBy: { loggedAt: 'desc' },
+            select: { imageUrl: true, loggedAt: true, isFinal: true, hoursSpent: true },
+          },
+        },
+      },
+    },
+  });
+
+const updateUser = (id, data) =>
+  prisma.user.update({
+    where: { id },
+    data,
+  });
+
+const findPublicUsers = () =>
+  prisma.user.findMany({
+    where: { isPublic: true },
+    select: {
+      id: true,
+      username: true,
+      createdAt: true,
+      projects: {
+        where: { isFinalized: true, isPublic: true },
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+        select: {
+          id: true,
+          title: true,
+          artSessions: {
+            where: { isFinal: true },
+            orderBy: { loggedAt: 'desc' },
+            take: 1,
+            select: { imageUrl: true },
+          },
+        },
+      },
+      _count: {
+        select: { projects: { where: { isFinalized: true, isPublic: true } } },
+      },
+    },
+  });
+
 module.exports = {
-  findUserByEmail,
-  findUserByUsername,
-  createUser,
   createProject,
   findProjectsByUser,
   findProjectById,
@@ -155,8 +218,15 @@ module.exports = {
   createCollection,
   findCollectionsByUser,
   findCollectionById,
-  updateCollectionName,
+  updateCollection,
   deleteCollection,
   addProjectToCollection,
-  removeProjectFromCollection
+  removeProjectFromCollection,
+  findUserByEmail,
+  findUserByUsername,
+  createUser,
+  findUserById,
+  findPublicUserByUsername,
+  updateUser,
+  findPublicUsers
 };

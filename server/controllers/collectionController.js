@@ -3,7 +3,7 @@ const {
   createCollection,
   findCollectionsByUser,
   findCollectionById,
-  updateCollectionName,
+  updateCollection,
   deleteCollection,
   addProjectToCollection,
   removeProjectFromCollection,
@@ -11,13 +11,13 @@ const {
 
 const create = async (req, res, next) => {
   try {
-    const { name } = req.body;
+    const { name, isPublic } = req.body;
 
     if (!name) {
       return res.status(400).json({ error: 'name is required' });
     }
 
-    const collection = await createCollection(req.user.userId, name);
+    const collection = await createCollection(req.user.userId, name, !!isPublic);
     res.status(201).json(collection);
   } catch (err) {
     next(err);
@@ -47,13 +47,17 @@ const getOne = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   try {
-    const { name } = req.body;
+    const { name, isPublic } = req.body;
 
-    if (!name) {
-      return res.status(400).json({ error: 'name is required' });
+    const data = {};
+    if (name !== undefined) data.name = name;
+    if (isPublic !== undefined) data.isPublic = !!isPublic;
+
+    if (Object.keys(data).length === 0) {
+      return res.status(400).json({ error: 'At least one field (name or isPublic) is required' });
     }
 
-    const result = await updateCollectionName(Number(req.params.id), req.user.userId, name);
+    const result = await updateCollection(Number(req.params.id), req.user.userId, data);
     if (result.count === 0) {
       return res.status(404).json({ error: 'Collection not found' });
     }

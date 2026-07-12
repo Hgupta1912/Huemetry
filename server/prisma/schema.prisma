@@ -26,7 +26,9 @@ model Project {
   mediums       String[]
   substrates    String[]     @default([])
   genres        String[]
+  dimensions Float[]
   mode          String       @db.VarChar(20)
+  isPublic      Boolean      @default(false)
   isFinalized   Boolean      @default(false)
   isRealism     Boolean      @default(false)
   collaborators String[]
@@ -54,7 +56,6 @@ model ArtSession {
   comments   String?
   loggedAt   DateTime @default(now()) @db.Timestamp(6)
   colors     Color[]
-  busyness   Float?
 }
 
 model Color {
@@ -75,5 +76,6 @@ model Collection {
   userId   Int
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   name     String    @db.VarChar(255)
+  isPublic Boolean   @default(false)
   projects Project[]
 }

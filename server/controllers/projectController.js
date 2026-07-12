@@ -14,10 +14,18 @@ const ALLOWED_MODES = ['retrospective', 'progressive'];
 
 const create = async (req, res, next) => {
   try {
-    const { title, mediums, substrates, genres, mode, collaborators, createdAt, isRealism } = req.body;
+    const { title, mediums, substrates, genres, dimensions, mode, collaborators, createdAt, isRealism, isPublic } = req.body;
 
-    if (!title || !mediums?.length || !genres?.length || !mode) {
-      return res.status(400).json({ error: 'title, mediums, genres, and mode are required' });
+    if (!title || !mediums?.length || !genres?.length || !mode || !dimensions?.length) {
+      return res.status(400).json({ error: 'title, mediums, genres, mode, and dimensions are required' });
+    }
+
+    if (dimensions.length !== 2 && dimensions.length !== 3) {
+      return res.status(400).json({ error: 'dimensions must have exactly 2 or 3 entries' });
+    }
+
+    if (dimensions.some((d) => typeof d !== 'number' || d <= 0)) {
+      return res.status(400).json({ error: 'dimensions must be positive numbers' });
     }
 
     if (!ALLOWED_MODES.includes(mode)) {
@@ -29,9 +37,11 @@ const create = async (req, res, next) => {
       mediums,
       substrates: substrates || [],
       genres,
+      dimensions: dimensions || [],
       mode,
       collaborators: collaborators || [],
       isRealism: !!isRealism,
+      isPublic: !!isPublic,
     };
 
     if (mode === 'retrospective') {
@@ -73,9 +83,26 @@ const getOne = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   try {
-    const { title, mediums, substrates, genres, collaborators, isFinalized, isRealism } = req.body;
+    const { title, mediums, substrates, genres, dimensions, collaborators, isFinalized, isRealism, isPublic } = req.body;
 
-    const data = { title, mediums, substrates, genres, collaborators, isFinalized, isRealism };
+    if (
+      (title !== undefined && !title) ||
+      (mediums !== undefined && !mediums.length) ||
+      (genres !== undefined && !genres.length)
+    ) {
+      return res.status(400).json({ error: 'title, mediums, and genres cannot be empty' });
+    }
+
+    if (dimensions !== undefined) {
+      if (dimensions.length !== 2 && dimensions.length !== 3) {
+        return res.status(400).json({ error: 'dimensions must have exactly 2 or 3 entries' });
+      }
+      if (dimensions.some((d) => typeof d !== 'number' || d <= 0)) {
+        return res.status(400).json({ error: 'dimensions must be positive numbers' });
+      }
+    }
+
+    const data = { title, mediums, substrates, dimensions, genres, collaborators, isFinalized, isRealism, isPublic };
 
     const result = await updateProject(Number(req.params.id), req.user.userId, data);
 
