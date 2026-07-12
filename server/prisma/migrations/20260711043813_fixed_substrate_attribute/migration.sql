@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Project" ALTER COLUMN "substrate" SET DEFAULT ARRAY[]::TEXT[],
+ALTER COLUMN "substrate" SET DATA TYPE TEXT[];

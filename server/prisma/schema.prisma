@@ -21,22 +21,33 @@ model User {
 model Project {
   id            Int          @id @default(autoincrement())
   userId        Int
-  user          User         @relation(fields: [userId], references: [id])
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   title         String       @db.VarChar(255)
   mediums       String[]
-  subjectMatter String       @db.VarChar(100)
-  mode          String       @db.VarChar(20) // "retrospective" | "progressive"
+  substrates    String[]     @default([])
+  genres        String[]
+  mode          String       @db.VarChar(20)
   isFinalized   Boolean      @default(false)
+  isRealism     Boolean      @default(false)
   collaborators String[]
   createdAt     DateTime     @default(now()) @db.Timestamp(6)
   artSessions   ArtSession[]
   collections   Collection[]
+  reference     Reference?
+}
+
+model Reference {
+  id        Int     @id @default(autoincrement())
+  projectId Int     @unique
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  imageUrl  String  @db.VarChar(500)
+  colors    Color[]
 }
 
 model ArtSession {
   id         Int      @id @default(autoincrement())
   projectId  Int
-  project    Project  @relation(fields: [projectId], references: [id])
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   imageUrl   String   @db.VarChar(500)
   isFinal    Boolean  @default(false)
   hoursSpent Float?
@@ -47,20 +58,22 @@ model ArtSession {
 }
 
 model Color {
-  id         Int     @id @default(autoincrement())
-  artSessionId Int
-  artSession ArtSession @relation(fields: [artSessionId], references: [id])
-  hex        String  @db.VarChar(7)
-  weight     Float
-  hue        Float
-  saturation Float
-  value      Float
+  id           Int         @id @default(autoincrement())
+  artSessionId Int?
+  artSession   ArtSession? @relation(fields: [artSessionId], references: [id], onDelete: Cascade)
+  referenceId  Int?
+  reference    Reference?  @relation(fields: [referenceId], references: [id], onDelete: Cascade)
+  hex          String      @db.VarChar(7)
+  weight       Float
+  hue          Float
+  saturation   Float
+  value        Float
 }
 
 model Collection {
   id       Int       @id @default(autoincrement())
   userId   Int
-  user     User      @relation(fields: [userId], references: [id])
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   name     String    @db.VarChar(255)
   projects Project[]
 }
