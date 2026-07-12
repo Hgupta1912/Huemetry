@@ -90,6 +90,50 @@ const deleteReference = (projectId) =>
     where: { projectId },
   });
 
+const createCollection = (userId, name) =>
+  prisma.collection.create({ data: { userId, name } });
+
+const findCollectionsByUser = (userId) =>
+  prisma.collection.findMany({
+    where: { userId },
+    include: { projects: true },
+  });
+
+const findCollectionById = (id, userId) =>
+  prisma.collection.findFirst({
+    where: { id, userId },
+    include: {
+      projects: {
+        include: {
+          artSessions: { include: { colors: true } },
+          reference: { include: { colors: true } },
+        },
+      },
+    },
+  });
+const updateCollectionName = (id, userId, name) =>
+  prisma.collection.updateMany({
+    where: { id, userId },
+    data: { name },
+  });
+
+const deleteCollection = (id, userId) =>
+  prisma.collection.deleteMany({
+    where: { id, userId },
+  });
+
+const addProjectToCollection = (collectionId, projectId, userId) =>
+  prisma.collection.updateMany({
+    where: { id: collectionId, userId },
+    data: { projects: { connect: { id: projectId } } },
+  });
+
+const removeProjectFromCollection = (collectionId, projectId, userId) =>
+  prisma.collection.updateMany({
+    where: { id: collectionId, userId },
+    data: { projects: { disconnect: { id: projectId } } },
+  });
+
 module.exports = {
   findUserByEmail,
   findUserByUsername,
@@ -107,5 +151,12 @@ module.exports = {
   createReference,
   findReferenceByProject,
   updateReference,
-  deleteReference
+  deleteReference,
+  createCollection,
+  findCollectionsByUser,
+  findCollectionById,
+  updateCollectionName,
+  deleteCollection,
+  addProjectToCollection,
+  removeProjectFromCollection
 };
