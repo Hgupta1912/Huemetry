@@ -69,6 +69,7 @@ model Color {
   hue          Float
   saturation   Float
   value        Float
+  tonalRange   String      @db.VarChar(10) // "overall" | "shadow" | "midtone" | "highlight"
 }
 
 model Collection {

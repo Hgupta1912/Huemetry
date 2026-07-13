@@ -8,7 +8,7 @@ const {
   deleteArtSession,
 } = require('../db/queries.js');
 
-// color and busyness fields are not here yet — need the extraction algorithms implemented first
+// color fields are not here yet — need the extraction algorithms implemented first
 
 const create = async (req, res, next) => {
   try {
