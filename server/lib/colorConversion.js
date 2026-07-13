@@ -1,0 +1,1 @@
+//add a function in hee (on top of everything else) that calculate how warm / cool the seleced image is

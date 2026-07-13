@@ -4,7 +4,12 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 
 const authRouter = require('./routes/authRouter.js');
+const projectRouter = require('./routes/projectRouter.js');
+const collectionRouter = require('./routes/collectionRouter.js');
+const userRouter = require('./routes/userRouter.js');
+
 const errorHandler = require('./middleware/errorHandler.js');
+
 
 const app = express();
 
@@ -24,17 +29,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/auth', authRouter);
+app.use('/api/projects', projectRouter);
+app.use('/api/collections', collectionRouter);
+app.use('/api/users', userRouter);
 
-// TODO — Milestone 2: mount once controllers/routers are built
-// const projectRouter = require('./routes/projectRouter.js');
-// const artSessionRouter = require('./routes/artSessionRouter.js');
-// const collectionRouter = require('./routes/collectionRouter.js');
-// const userRouter = require('./routes/userRouter.js');
-//
-// app.use('/api/projects', projectRouter);
-// app.use('/api/art-sessions', artSessionRouter);
-// app.use('/api/collections', collectionRouter);
-// app.use('/api/users', userRouter);
+//df the api/analyze endpoint for un logged in ppl tryna get an art analysis on home page
 
 app.use(errorHandler);
 
