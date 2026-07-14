@@ -9,6 +9,8 @@ const {
   updateReference,
   deleteReference,
 } = require('../db/queries.js');
+const { uploadImageBuffer } = require('../lib/cloudinary.js');
+
 
 const ALLOWED_MODES = ['retrospective', 'progressive'];
 
@@ -49,7 +51,6 @@ const create = async (req, res, next) => {
         return res.status(400).json({ error: 'createdAt is required for retrospective projects' });
       }
       data.createdAt = new Date(createdAt);
-      data.isFinalized = true;
     }
 
     const project = await createProject(req.user.userId, data);
@@ -83,7 +84,7 @@ const getOne = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   try {
-    const { title, mediums, substrates, genres, dimensions, collaborators, isFinalized, isRealism, isPublic } = req.body;
+    const { title, mediums, substrates, genres, dimensions, collaborators, isRealism, isPublic } = req.body;
 
     if (
       (title !== undefined && !title) ||
@@ -102,7 +103,7 @@ const update = async (req, res, next) => {
       }
     }
 
-    const data = { title, mediums, substrates, dimensions, genres, collaborators, isFinalized, isRealism, isPublic };
+    const data = { title, mediums, substrates, dimensions, genres, collaborators, isRealism, isPublic };
 
     const result = await updateProject(Number(req.params.id), req.user.userId, data);
 
@@ -142,15 +143,13 @@ const uploadReference = async (req, res, next) => {
     if (!project.isRealism) {
       return res.status(400).json({ error: 'Reference photos are only allowed on realism projects' });
     }
-
-    const { imageUrl } = req.body;
-    // TEMP until Milestone 3 Cloudinary wiring
-
-    if (!imageUrl) {
-      return res.status(400).json({ error: 'imageUrl is required' });
+    if (!req.file) {
+      return res.status(400).json({ error: 'An image file is required' });
     }
 
-    const reference = await createReference(project.id, imageUrl);
+    const result = await uploadImageBuffer(req.file.buffer);
+
+    const reference = await createReference(project.id, result.secure_url);
     res.status(201).json(reference);
   } catch (err) {
     next(err);
@@ -181,14 +180,14 @@ const editReference = async (req, res, next) => {
     if (!project) {
       return res.status(404).json({ error: 'Project not found' });
     }
-
-    const { imageUrl } = req.body;
-    if (!imageUrl) {
-      return res.status(400).json({ error: 'imageUrl is required' });
+    if (!req.file) {
+      return res.status(400).json({ error: 'An image file is required' });
     }
 
-    const result = await updateReference(project.id, imageUrl);
-    if (result.count === 0) {
+    const result = await uploadImageBuffer(req.file.buffer);
+
+    const updateResult = await updateReference(project.id, result.secure_url);
+    if (updateResult.count === 0) {
       return res.status(404).json({ error: 'Reference not found' });
     }
 
