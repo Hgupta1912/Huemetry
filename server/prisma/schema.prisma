@@ -31,6 +31,7 @@ model Project {
   isPublic      Boolean      @default(false)
   isFinalized   Boolean      @default(false)
   isRealism     Boolean      @default(false)
+  isMonochrome  Boolean      @default(false)
   collaborators String[]
   createdAt     DateTime     @default(now()) @db.Timestamp(6)
   artSessions   ArtSession[]
@@ -44,6 +45,7 @@ model Reference {
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   imageUrl  String  @db.VarChar(500)
   colors    Color[]
+  statistics Json?
 }
 
 model ArtSession {
@@ -56,6 +58,8 @@ model ArtSession {
   comments   String?
   loggedAt   DateTime @default(now()) @db.Timestamp(6)
   colors     Color[]
+  statistics Json?
+  comparedToReference Json?
 }
 
 model Color {

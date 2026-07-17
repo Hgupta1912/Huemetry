@@ -13,7 +13,7 @@ const {
   removeReference,
 } = require('../controllers/projectController.js');
 const artSessionRouter = require('./artSessionRouter.js');
-const upload = require('../middleware/upload.js');
+const { upload } = require('../middleware/upload.js');
 
 
 router.use(authenticate);

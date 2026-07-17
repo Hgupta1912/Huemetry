@@ -7,6 +7,7 @@ const authRouter = require('./routes/authRouter.js');
 const projectRouter = require('./routes/projectRouter.js');
 const collectionRouter = require('./routes/collectionRouter.js');
 const userRouter = require('./routes/userRouter.js');
+const analyzeRouter = require('./routes/analyzeRouter.js');
 
 const errorHandler = require('./middleware/errorHandler.js');
 
@@ -32,8 +33,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/projects', projectRouter);
 app.use('/api/collections', collectionRouter);
 app.use('/api/users', userRouter);
-
-//df the api/analyze endpoint for un logged in ppl tryna get an art analysis on home page
+app.use('/api/analyze', analyzeRouter);
 
 app.use(errorHandler);
 

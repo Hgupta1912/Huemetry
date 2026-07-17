@@ -37,8 +37,11 @@ const deleteProject = (id, userId) =>
     where: { id, userId },
   });
 
-const createArtSession = (projectId, data) =>
-  prisma.artSession.create({ data: { ...data, projectId } });
+const createArtSession = (projectId, data, colors = []) =>
+  prisma.artSession.create({
+     data: { ...data, projectId, colors: { create: colors} },
+     include: { colors: true },
+  });
 
 const findArtSessionsByProject = (projectId) =>
   prisma.artSession.findMany({
@@ -59,14 +62,26 @@ const updateArtSession = (id, projectId, data) =>
     data,
   });
 
+// For updates that need to REPLACE the session's colors (i.e. a new image
+// was uploaded and the palette was recomputed). Uses singular `update` by
+// id, not updateMany, since updateMany doesn't support nested relation writes.
+const replaceArtSessionColors = (id, data, colors) =>
+  prisma.artSession.update({
+    where: { id },
+    data: { ...data, colors: { deleteMany: {}, create: colors } },
+    include: { colors: true },
+  });
+
 const deleteArtSession = (id, projectId) =>
   prisma.artSession.deleteMany({
     where: { id, projectId },
   });
 
-//when color algorithms are made, update this to also create the colors that are to be nested 
-const createReference = (projectId, imageUrl) =>
-  prisma.reference.create({ data: { projectId, imageUrl } });
+const createReference = (projectId, imageUrl, colors = [], statistics = null) =>
+  prisma.reference.create({
+    data: { projectId, statistics, imageUrl, colors: { create: colors } },
+    include: { colors: true },
+  });
 
 const findReferenceByProject = (projectId) =>
   prisma.reference.findUnique({
@@ -74,11 +89,17 @@ const findReferenceByProject = (projectId) =>
     include: { colors: true },
   });
 
-//when color algorithms are made, update this to also create the colors that are to be nested
 const updateReference = (projectId, imageUrl) =>
   prisma.reference.updateMany({
     where: { projectId },
     data: { imageUrl },
+  });
+
+const replaceReferenceColors = (projectId, data, colors) =>
+  prisma.reference.update({
+    where: { projectId },
+    data: { ...data, colors: { deleteMany: {}, create: colors } },
+    include: { colors: true },
   });
 
 const deleteReference = (projectId) =>
@@ -210,10 +231,12 @@ module.exports = {
   findArtSessionsByProject,
   findArtSessionById,
   updateArtSession,
+  replaceArtSessionColors,
   deleteArtSession,
   createReference,
   findReferenceByProject,
   updateReference,
+  replaceReferenceColors,
   deleteReference,
   createCollection,
   findCollectionsByUser,

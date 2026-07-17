@@ -1,3 +1,6 @@
+const { getPixelData } = require('../lib/imageProcessing.js');
+const { extractPalette, flattenPalettesToColorRows } = require('../lib/extractPalette.js');
+const { computeImageStatistics } = require('../lib/imageStatistics.js');
 const {
   createProject,
   findProjectsByUser,
@@ -7,6 +10,7 @@ const {
   createReference,
   findReferenceByProject,
   updateReference,
+  replaceReferenceColors,
   deleteReference,
 } = require('../db/queries.js');
 const { uploadImageBuffer } = require('../lib/cloudinary.js');
@@ -16,7 +20,7 @@ const ALLOWED_MODES = ['retrospective', 'progressive'];
 
 const create = async (req, res, next) => {
   try {
-    const { title, mediums, substrates, genres, dimensions, mode, collaborators, createdAt, isRealism, isPublic } = req.body;
+    const { title, mediums, substrates, genres, dimensions, mode, collaborators, createdAt, isRealism, isMonochrome, isPublic } = req.body;
 
     if (!title || !mediums?.length || !genres?.length || !mode || !dimensions?.length) {
       return res.status(400).json({ error: 'title, mediums, genres, mode, and dimensions are required' });
@@ -43,6 +47,7 @@ const create = async (req, res, next) => {
       mode,
       collaborators: collaborators || [],
       isRealism: !!isRealism,
+      isMonochrome: !!isMonochrome,
       isPublic: !!isPublic,
     };
 
@@ -84,7 +89,7 @@ const getOne = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   try {
-    const { title, mediums, substrates, genres, dimensions, collaborators, isRealism, isPublic } = req.body;
+    const { title, mediums, substrates, genres, dimensions, collaborators, isRealism, isMonochrome, isPublic } = req.body;
 
     if (
       (title !== undefined && !title) ||
@@ -103,7 +108,7 @@ const update = async (req, res, next) => {
       }
     }
 
-    const data = { title, mediums, substrates, dimensions, genres, collaborators, isRealism, isPublic };
+    const data = { title, mediums, substrates, dimensions, genres, collaborators, isRealism, isMonochrome, isPublic };
 
     const result = await updateProject(Number(req.params.id), req.user.userId, data);
 
@@ -147,10 +152,24 @@ const uploadReference = async (req, res, next) => {
       return res.status(400).json({ error: 'An image file is required' });
     }
 
-    const result = await uploadImageBuffer(req.file.buffer);
+    const uploadResult = await uploadImageBuffer(req.file.buffer);
+    const { pixels } = await getPixelData(req.file.buffer);
 
-    const reference = await createReference(project.id, result.secure_url);
-    res.status(201).json(reference);
+    const statistics = computeImageStatistics(pixels, project.isMonochrome);
+    const colorsData = project.isMonochrome
+      ? []
+      : flattenPalettesToColorRows(extractPalette(pixels));
+
+    const reference = await createReference(
+      project.id,
+      uploadResult.secure_url,
+      colorsData,
+      statistics,
+    );
+
+    const final = await findReferenceByProject(project.id);
+
+    res.status(201).json(final);
   } catch (err) {
     next(err);
   }
@@ -184,14 +203,20 @@ const editReference = async (req, res, next) => {
       return res.status(400).json({ error: 'An image file is required' });
     }
 
-    const result = await uploadImageBuffer(req.file.buffer);
+    const uploadResult = await uploadImageBuffer(req.file.buffer);
+    const { pixels } = await getPixelData(req.file.buffer);
 
-    const updateResult = await updateReference(project.id, result.secure_url);
-    if (updateResult.count === 0) {
-      return res.status(404).json({ error: 'Reference not found' });
-    }
+    const statistics = computeImageStatistics(pixels, project.isMonochrome);
+    const colorsData = project.isMonochrome
+      ? []
+      : flattenPalettesToColorRows(extractPalette(pixels));
 
-    const reference = await findReferenceByProject(project.id);
+    const reference = await replaceReferenceColors(
+      project.id,
+      { imageUrl: uploadResult.secure_url, statistics },
+      colorsData,
+    );
+
     res.status(200).json(reference);
   } catch (err) {
     next(err);
