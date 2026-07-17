@@ -23,10 +23,11 @@ const hexToRgb = (hex) => {
 // missing colors the reference has, or introducing colors it doesn't.
 const matchPalettes = (referenceColors, wipColors) => {
   if (referenceColors.length === 0 || wipColors.length === 0) {
-    return { matches: [], averageDistance: null };
+    return { matches: [], averageDistance: null, unmatchedWipColors: [] };
   }
 
   const wipLab = wipColors.map((c) => rgbToLab(...hexToRgb(c.hex)));
+  const matchedWipIndices = new Set();
 
   const matches = referenceColors.map((refColor) => {
     const refLab = rgbToLab(...hexToRgb(refColor.hex));
@@ -40,6 +41,8 @@ const matchPalettes = (referenceColors, wipColors) => {
         closestIndex = j;
       }
     });
+
+    matchedWipIndices.add(closestIndex);
 
     return {
       referenceHex: refColor.hex,
@@ -56,9 +59,17 @@ const matchPalettes = (referenceColors, wipColors) => {
   const averageDistance =
     totalWeight > 0
       ? matches.reduce((sum, m) => sum + m.distance * m.referenceWeight, 0) / totalWeight
-      : matches.reduce((sum, m) => sum + m.distance, 0) / matches.length; //divide-by-zero net for if errors in matches regarding weights
+      : matches.reduce((sum, m) => sum + m.distance, 0) / matches.length;
 
-  return { matches, averageDistance };
+  // WIP colors that no reference color picked as its nearest neighbor;
+  // these are colors present in the WIP that don't correspond to anything
+  // in the reference's palette (e.g. a hue the artist introduced that
+  // wasn't part of the original reference at all).
+  const unmatchedWipColors = wipColors
+    .filter((_, i) => !matchedWipIndices.has(i))
+    .map((c) => ({ hex: c.hex, weight: c.weight }));
+
+  return { matches, averageDistance, unmatchedWipColors };
 };
 
 // Signed delta between a WIP's scalar stat and the reference's, plus a

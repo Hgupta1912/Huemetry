@@ -4,14 +4,48 @@ const {
   findArtSessionsByProject,
   findArtSessionById,
   updateArtSession,
+  replaceArtSessionColors,
   updateProject,
   deleteArtSession,
+  findReferenceByProject,
 } = require('../db/queries.js');
 const { uploadImageBuffer } = require('../lib/cloudinary.js');
+const { getPixelData } = require('../lib/imageProcessing.js');
+const { extractPalette, flattenPalettesToColorRows, groupColorsByTonalRange } = require('../lib/extractPalette.js');
+const { computeImageStatistics } = require('../lib/imageStatistics.js');
+const { compareToReference } = require('../lib/compareToReference.js');
 
+// Runs the color/statistics pipeline on an uploaded image; if the
+// project has a reference photo, it compares the result against it. Shared
+// by create and update, since both need the exact same processing whenever
+// a new image is involved.
+const processImage = async (buffer, project) => {
+  const { pixels } = await getPixelData(buffer);
 
-// color fields are not here yet — need the extraction algorithms implemented first
+  const statistics = computeImageStatistics(pixels, project.isMonochrome);
+  const colorsData = project.isMonochrome
+    ? []
+    : flattenPalettesToColorRows(extractPalette(pixels));
 
+  let comparedToReference = null;
+  if (project.isRealism && !project.isMonochrome) {
+    const reference = await findReferenceByProject(project.id);
+    if (reference && reference.statistics) {
+      comparedToReference = compareToReference(
+        {
+          palettes: groupColorsByTonalRange(reference.colors),
+          statistics: reference.statistics,
+        },
+        {
+          palettes: groupColorsByTonalRange(colorsData),
+          statistics,
+        },
+      );
+    }
+  }
+
+  return { statistics, colorsData, comparedToReference };
+};
 
 const create = async (req, res, next) => {
   try {
@@ -30,14 +64,21 @@ const create = async (req, res, next) => {
 
     const isFinalBool = isFinal === 'true' || isFinal === true;
 
-    const result = await uploadImageBuffer(req.file.buffer);
+    const uploadResult = await uploadImageBuffer(req.file.buffer);
+    const { statistics, colorsData, comparedToReference } = await processImage(req.file.buffer, project);
 
-    const artSession = await createArtSession(project.id, {
-      imageUrl: result.secure_url,
-      isFinal: isFinalBool,
-      hoursSpent: hoursSpent !== undefined && hoursSpent !== '' ? Number(hoursSpent) : null,
-      comments: comments || null,
-    });
+    const artSession = await createArtSession(
+      project.id,
+      {
+        imageUrl: uploadResult.secure_url,
+        isFinal: isFinalBool,
+        hoursSpent: hoursSpent !== undefined && hoursSpent !== '' ? Number(hoursSpent) : null,
+        comments: comments || null,
+        statistics,
+        comparedToReference,
+      },
+      colorsData,
+    );
 
     if (isFinalBool) {
       await updateProject(project.id, req.user.userId, { isFinalized: true });
@@ -100,43 +141,55 @@ const update = async (req, res, next) => {
       : existing.isFinal;
 
     const becameFinal = !existing.isFinal && isFinalBool;
-
     if (becameFinal && project.isFinalized) {
       return res.status(400).json({ error: 'This project already has a final session' });
-    }
-
-    let imageUrl = existing.imageUrl;
-    if (req.file) {
-      const result = await uploadImageBuffer(req.file.buffer);
-      imageUrl = result.secure_url;
-      // this doesn't delete the old image in Cloudinary... oh well
     }
 
     const hoursSpentNum = hoursSpent !== undefined && hoursSpent !== ''
       ? Number(hoursSpent)
       : existing.hoursSpent;
-
     const commentsVal = comments !== undefined ? (comments || null) : existing.comments;
 
-    const data = { imageUrl, isFinal: isFinalBool, hoursSpent: hoursSpentNum, comments: commentsVal };
+    let updated;
+    if (req.file) {  // New image: full re-processing, palette recomputed, colors replaced.
+      const uploadResult = await uploadImageBuffer(req.file.buffer);
+      const { statistics, colorsData, comparedToReference } = await processImage(req.file.buffer, project);
 
-    await updateArtSession(Number(req.params.id), project.id, data);
+      updated = await replaceArtSessionColors(
+        Number(req.params.id),
+        {
+          imageUrl: uploadResult.secure_url,
+          isFinal: isFinalBool,
+          hoursSpent: hoursSpentNum,
+          comments: commentsVal,
+          statistics,
+          comparedToReference,
+        },
+        colorsData,
+      );
+      // this doesn't delete the old image in Cloudinary... oh well
+    } else {
+      // No new image — simple field update, colors/statistics untouched.
+      await updateArtSession(Number(req.params.id), project.id, {
+        isFinal: isFinalBool,
+        hoursSpent: hoursSpentNum,
+        comments: commentsVal,
+      });
+      updated = await findArtSessionById(Number(req.params.id), project.id);
+    }
 
     const becameUnfinal = existing.isFinal && !isFinalBool;
-
     if (becameFinal) {
       await updateProject(project.id, req.user.userId, { isFinalized: true });
     } else if (becameUnfinal) {
       await updateProject(project.id, req.user.userId, { isFinalized: false });
     }
 
-    const updated = await findArtSessionById(Number(req.params.id), project.id);
     res.status(200).json(updated);
   } catch (err) {
     next(err);
   }
 };
-
 const remove = async (req, res, next) => {
   try {
     const project = await findProjectById(Number(req.params.projectId), req.user.userId);

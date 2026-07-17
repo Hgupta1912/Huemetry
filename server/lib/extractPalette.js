@@ -1,4 +1,4 @@
-const { getPixelData, bucketPixelsByTone } = require('./imageProcessing.js');
+const { bucketPixelsByTone } = require('./imageProcessing.js');
 const { runKMeans } = require('./kmeans.js');
 const { rgbToHsv, rgbToHex, rgbToLab } = require('./colorConversion.js');
 const { consolidateClusters } = require('./consolidateClusters.js');
@@ -51,8 +51,7 @@ const clustersToColors = (pixels, targetCount) => {
   });
 };
 
-const extractPalette = async (buffer) => {
-  const { pixels } = await getPixelData(buffer);
+const extractPalette =  (pixels) => {
   const { shadows, midtones, highlights } = bucketPixelsByTone(pixels);
 
   return {
@@ -63,4 +62,30 @@ const extractPalette = async (buffer) => {
   };
 };
 
-module.exports = { extractPalette };
+// Flattens the 4-tonal-range palette object into one array of Color-row-shaped
+// objects, each tagged with which tonal range it came from; this is the shape
+// Prisma needs for a nested `colors: { create: [...] }` write.
+const flattenPalettesToColorRows = (palettes) => {
+  const rows = [];
+  for (const tonalRange of ['overall', 'shadow', 'midtone', 'highlight']) {
+    for (const color of palettes[tonalRange]) {
+      rows.push({ ...color, tonalRange });
+    }
+  }
+  return rows;
+};
+
+// Inverse of the above. Regroups a flat array of colors (from the database,
+// or from flattenPalettesToColorRows) back into the 4-tonal-range shape that
+// compareToReference expects.
+const groupColorsByTonalRange = (colors) => {
+  const grouped = { overall: [], shadow: [], midtone: [], highlight: [] };
+  for (const c of colors) {
+    if (grouped[c.tonalRange]) {
+      grouped[c.tonalRange].push({ hex: c.hex, weight: c.weight });
+    }
+  }
+  return grouped;
+};
+
+module.exports = { extractPalette, flattenPalettesToColorRows, groupColorsByTonalRange }
