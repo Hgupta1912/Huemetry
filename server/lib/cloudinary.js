@@ -20,4 +20,4 @@ const uploadImageBuffer = (buffer, folder = 'artlog') => {
   });
 };
 
-module.exports = { uploadImageBuffer };
+module.exports = { uploadImageBuffer }; 
