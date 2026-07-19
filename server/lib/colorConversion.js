@@ -32,6 +32,28 @@ const rgbToHsv = (r, g, b) => {
   return { h, s, v };
 };
 
+const hsvToRgb = (h, s, v) => {
+  const sNorm = s / 100;
+  const vNorm = v / 100;
+  const c = vNorm * sNorm;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = vNorm - c;
+
+  let r = 0, g = 0, b = 0;
+  if (h < 60) [r, g, b] = [c, x, 0];
+  else if (h < 120) [r, g, b] = [x, c, 0];
+  else if (h < 180) [r, g, b] = [0, c, x];
+  else if (h < 240) [r, g, b] = [0, x, c];
+  else if (h < 300) [r, g, b] = [x, 0, c];
+  else [r, g, b] = [c, 0, x];
+
+  return {
+    r: Math.round((r + m) * 255),
+    g: Math.round((g + m) * 255),
+    b: Math.round((b + m) * 255),
+  };
+};
+
 // Converts RGB (0-255 each) to a hex string, e.g. "#a4785f"
 const rgbToHex = (r, g, b) => {
   const toHex = (n) => Math.round(n).toString(16).padStart(2, '0');
@@ -47,6 +69,8 @@ const getWarmthScore = (hue) => {
   );
   return 1 - (distanceFromWarmCenter / 90);
 };
+
+
 
 // Converts RGB (0-255 each) to CIELAB using culori (a well-maintained,
 // CSS-Color-4-compliant conversion library) rather than hand-rolled matrix
@@ -64,4 +88,4 @@ const labToRgb = (l, a, b) => {
   return { r: clamp(result.r), g: clamp(result.g), b: clamp(result.b) };
 };
 
-module.exports = { rgbToHsv, rgbToHex, getWarmthScore, rgbToLab, labToRgb };
+module.exports = { rgbToHsv, hsvToRgb, rgbToHex, getWarmthScore, rgbToLab, labToRgb };
