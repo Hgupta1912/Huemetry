@@ -112,51 +112,29 @@ export default function Analyze() {
 
       {result?.image.palettes && (
         <div className="mt-8 flex flex-col gap-6">
-          <div>
-            <h2 className="font-display text-xl uppercase text-ink mb-2">Palette</h2>
-            <div className="flex gap-2">
-              {result.image.palettes.overall.map((color) => (
-                <div key={color.hex} className="flex-1 flex flex-col items-center gap-1">
-                  <div className="w-full aspect-square" style={{ backgroundColor: color.hex }} />
-                  <span className="text-xs text-gray-500">{color.hex}</span>
+            {(['overall', 'highlight', 'midtone', 'shadow'] as const).map((tonalRange) => (
+            <div key={tonalRange}>
+                <h2 className="font-display text-xl uppercase text-ink mb-2 capitalize">
+                {tonalRange}
+                </h2>
+                <div className="flex gap-2 flex-wrap">
+                {result.image.palettes![tonalRange].map((color) => (
+                    <div
+                    key={color.hex}
+                    className="w-12 h-12 flex-shrink-0"
+                    style={{ backgroundColor: color.hex }}
+                    />
+                ))}
                 </div>
-              ))}
             </div>
-          </div>
+            ))}
 
-          <div>
-            <h2 className="font-display text-xl uppercase text-ink mb-2">Highlights</h2>
-            <div className="flex gap-2">
-              {result.image.palettes.highlight.map((color) => (
-                <div key={color.hex} className="flex-1 aspect-square" style={{ backgroundColor: color.hex }} />
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h2 className="font-display text-xl uppercase text-ink mb-2">Midtones</h2>
-            <div className="flex gap-2">
-              {result.image.palettes.midtone.map((color) => (
-                <div key={color.hex} className="flex-1 aspect-square" style={{ backgroundColor: color.hex }} />
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h2 className="font-display text-xl uppercase text-ink mb-2">Shadows</h2>
-            <div className="flex gap-2">
-              {result.image.palettes.shadow.map((color) => (
-                <div key={color.hex} className="flex-1 aspect-square" style={{ backgroundColor: color.hex }} />
-              ))}
-            </div>
-          </div>
-
-          <Link
+            <Link
             to="/signup"
             className="py-3 text-center font-display uppercase tracking-wide text-ink bg-cyan-true/50 active:bg-blend-blue transition-colors"
-          >
+            >
             Sign up to save your analysis
-          </Link>
+            </Link>
         </div>
       )}
     </main>

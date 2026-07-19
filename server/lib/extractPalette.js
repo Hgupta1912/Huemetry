@@ -1,17 +1,61 @@
 const { bucketPixelsByTone } = require('./imageProcessing.js');
 const { runKMeans } = require('./kmeans.js');
-const { rgbToHsv, rgbToHex, rgbToLab } = require('./colorConversion.js');
+const { rgbToHsv, hsvToRgb, rgbToHex, rgbToLab } = require('./colorConversion.js');
 const { consolidateClusters } = require('./consolidateClusters.js');
+const { summarizeDistribution } = require('./imageStatistics.js');
+
 
 const CLUSTERS_PER_PALETTE = 5;
 const CLUSTERS_PER_TONAL_BUCKET = 3;
 const OVER_CLUSTER_MULTIPLIER = 2;
 
-const SATURATION_BOOST = 3;
-const CONTRAST_BOOST = 3;
+const BASE_SATURATION_BOOST = 2;
+const MAX_ADAPTIVE_BOOST = 7;
+
+const CONTRAST_BOOST = 5;
 const MAX_LAB_DISTANCE = 100;
 
-const computeSaliencyWeights = (pixels) => {
+const computeAdaptiveSaturationBoost = (pixels) => {
+  const saturations = pixels.map(([r, g, b]) => rgbToHsv(r, g, b).s);
+  const stats = summarizeDistribution(saturations);
+
+  const medianFactor = stats.median / 100; // 0-1
+  const spreadFactor = Math.min(1, (stats.q3 - stats.q1) / 50); // IQR of 50+ points = max spread signal
+
+  const combinedSignal = medianFactor * spreadFactor; // both need to be present together
+
+  return BASE_SATURATION_BOOST + combinedSignal * (MAX_ADAPTIVE_BOOST - BASE_SATURATION_BOOST);
+};
+
+// Given the final overall palette, decides whether the piece is generally
+// vivid AND varied enough to warrant an artificial saturation punch-up on
+// the displayed swatches; purely cosmetic, doesn't affect clustering.
+const getSaturationPunch = (overallColors) => {
+  const saturations = overallColors.map((c) => c.saturation);
+  const stats = summarizeDistribution(saturations);
+
+  const medianHigh = stats.median > 50;
+  const spreadHigh = (stats.q3 - stats.q1) > 10;
+
+  if (medianHigh && spreadHigh) return 1.19; // 15% saturation boost
+  return 1; // 5% change
+};
+
+// Applies a saturation multiplier to one color, clamping at 100.
+const boostColorSaturation = (color, multiplier) => {
+  if (multiplier === 1) return color; 
+
+  const newSaturation = Math.min(100, color.saturation * multiplier);
+  const { r, g, b } = hsvToRgb(color.hue, newSaturation, color.value);
+
+  return {
+    ...color,
+    hex: rgbToHex(r, g, b),
+    saturation: newSaturation,
+  };
+};
+
+const computeSaliencyWeights = (pixels, saturationBoost) => {
   if (pixels.length === 0) return [];
 
   const labPixels = pixels.map(([r, g, b]) => {
@@ -34,7 +78,7 @@ const computeSaliencyWeights = (pixels) => {
     );
     const contrastFactor = Math.min(1, distFromMean / MAX_LAB_DISTANCE);
 
-    return 1 + SATURATION_BOOST * saturationFactor + CONTRAST_BOOST * contrastFactor;
+    return 1 + saturationBoost * saturationFactor + CONTRAST_BOOST * contrastFactor;
   });
 };
 
@@ -48,7 +92,8 @@ const computeSaliencyWeights = (pixels) => {
 const clustersToColors = (pixels, targetCount) => {
   if (pixels.length === 0) return [];
 
-  const weights = computeSaliencyWeights(pixels);
+  const saturationBoost = computeAdaptiveSaturationBoost(pixels);
+  const weights = computeSaliencyWeights(pixels, saturationBoost);
 
   const labPixels = pixels.map(([r, g, b]) => {
     const { l, a, b: bLab } = rgbToLab(r, g, b);
@@ -72,15 +117,30 @@ const clustersToColors = (pixels, targetCount) => {
   });
 };
 
-const extractPalette =  (pixels) => {
+const extractPalette = (pixels) => {
   const { shadows, midtones, highlights } = bucketPixelsByTone(pixels);
 
-  return {
-    overall: clustersToColors(pixels, CLUSTERS_PER_PALETTE),
-    shadow: clustersToColors(shadows, CLUSTERS_PER_TONAL_BUCKET),
-    midtone: clustersToColors(midtones, CLUSTERS_PER_TONAL_BUCKET),
-    highlight: clustersToColors(highlights, CLUSTERS_PER_TONAL_BUCKET),
+  const overall = clustersToColors(pixels, CLUSTERS_PER_PALETTE);
+  const punch = getSaturationPunch(overall);
+
+
+
+  const result = {
+    overall: overall.map((c) => boostColorSaturation(c, punch)),
+    shadow: clustersToColors(shadows, CLUSTERS_PER_TONAL_BUCKET).map((c) => boostColorSaturation(c, punch)),
+    midtone: clustersToColors(midtones, CLUSTERS_PER_TONAL_BUCKET).map((c) => boostColorSaturation(c, punch)),
+    highlight: clustersToColors(highlights, CLUSTERS_PER_TONAL_BUCKET).map((c) => boostColorSaturation(c, punch)),
   };
+
+  for (const [range, colors] of Object.entries(result)) {
+    colors.forEach((c, i) => {
+      if (!c || !c.hex) {
+        console.log(`BAD ENTRY in ${range}[${i}]:`, c);
+      }
+    });
+  }
+
+  return result;
 };
 
 // Flattens the 4-tonal-range palette object into one array of Color-row-shaped

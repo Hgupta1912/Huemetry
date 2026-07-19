@@ -8,7 +8,7 @@ export default function Home() {
       </h1>
       <p className="text-gray-600 max-w-sm mb-8">
         Upload any piece and instantly see its color palette, tonal breakdown,
-        and value statistics — powered by color science, built for artists.
+        and value statistics. Powered by color science, built for artists.
       </p>
 
       <Link
