@@ -8,12 +8,33 @@ const CLUSTERS_PER_TONAL_BUCKET = 3;
 const OVER_CLUSTER_MULTIPLIER = 2;
 
 const SATURATION_BOOST = 3;
+const CONTRAST_BOOST = 2;
+const MAX_LAB_DISTANCE = 100;
 
 const computeSaliencyWeights = (pixels) => {
   if (pixels.length === 0) return [];
-  return pixels.map(([r, g, b]) => {
+
+  const labPixels = pixels.map(([r, g, b]) => {
+    const { l, a, b: bLab } = rgbToLab(r, g, b);
+    return [l, a, bLab];
+  });
+
+  const meanLab = labPixels.reduce(
+    (acc, [l, a, b]) => [acc[0] + l, acc[1] + a, acc[2] + b],
+    [0, 0, 0]
+  ).map((sum) => sum / labPixels.length);
+
+  return pixels.map(([r, g, b], i) => {
     const { s } = rgbToHsv(r, g, b);
-    return 1 + SATURATION_BOOST * (s / 100);
+    const saturationFactor = s / 100;
+
+    const [l, a, bLab] = labPixels[i];
+    const distFromMean = Math.sqrt(
+      (l - meanLab[0]) ** 2 + (a - meanLab[1]) ** 2 + (bLab - meanLab[2]) ** 2
+    );
+    const contrastFactor = Math.min(1, distFromMean / MAX_LAB_DISTANCE);
+
+    return 1 + SATURATION_BOOST * saturationFactor + CONTRAST_BOOST * contrastFactor;
   });
 };
 

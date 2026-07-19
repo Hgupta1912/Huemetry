@@ -1,8 +1,8 @@
 const sharp = require('sharp');
 const { rgbToHsv } = require('./colorConversion.js');
 
-const SHADOW_CUTOFF_PERCENTILE = .33;
-const HIGHLIGHT_CUTOFF_PERCENTILE = .67;
+const SHADOW_CUTOFF_PERCENTILE = .45;
+const HIGHLIGHT_CUTOFF_PERCENTILE = .75;
 
 
 // Downsamples and denoises an image buffer, then extracts raw RGB pixel data.
