@@ -8,7 +8,7 @@ const CLUSTERS_PER_TONAL_BUCKET = 3;
 const OVER_CLUSTER_MULTIPLIER = 2;
 
 const SATURATION_BOOST = 3;
-const CONTRAST_BOOST = 2;
+const CONTRAST_BOOST = 3;
 const MAX_LAB_DISTANCE = 100;
 
 const computeSaliencyWeights = (pixels) => {
