@@ -2,14 +2,21 @@ import { Link } from 'react-router';
 
 export default function Home() {
   return (
-    <main className="flex flex-col items-center px-6 py-12 text-center">
-      <h1 className="font-display text-5xl uppercase text-ink leading-tight mb-4">
-        Art<br />Log
-      </h1>
-      <p className="text-gray-600 max-w-sm mb-8">
-        Upload any piece and instantly see its color palette, tonal breakdown,
-        and value statistics. Powered by color science, built for artists.
-      </p>
+    <main className="flex flex-col items-center px-6 pt-3 text-center overflow-y-auto h-full">
+
+      <div className="relative w-full flex flex-col items-center pt-12 pb-8">
+        <div className="absolute top-1 left-1/4 w-32 h-32 bg-cyan-true/50" />
+        <div className="absolute top-8 right-1/4 w-28 h-28 bg-magenta-true/50" />
+        <div className="absolute top-14 left-1/3 w-26 h-26 bg-yellow-true/50" />
+
+        <h1 className="relative font-display text-5xl uppercase text-ink leading-tight mb-4">
+          Art<br />Log
+        </h1>
+        <p className="relative text-gray-600 max-w-sm">
+          Upload any piece and instantly see its color palette and tonal breakdown; hue, saturation,
+          and value statistics, and more.<br/>Built by artists for artists.
+        </p>
+      </div>
 
       <Link
         to="/analyze"
@@ -25,20 +32,12 @@ export default function Home() {
         <div className="h-px bg-gray-200 flex-1" />
       </div>
 
-      <div className="flex gap-3 w-full max-w-xs mt-6">
-        <Link
-          to="/signup"
-          className="flex-1 py-3 font-display uppercase tracking-wide text-ink bg-cyan-true/50 active:bg-blend-blue transition-colors"
-        >
-          Sign up
-        </Link>
-        <Link
-          to="/login"
-          className="flex-1 py-3 font-display uppercase tracking-wide text-ink bg-magenta-true/50 active:bg-blend-blue transition-colors"
-        >
-          Log in
-        </Link>
-      </div>
+      <Link
+        to="/discover"
+        className="mt-6 py-3 w-full max-w-xs font-display uppercase tracking-wide text-ink bg-cyan-true/50 active:bg-blend-blue transition-colors"
+      >
+        Discover Artists
+      </Link>
     </main>
   );
 }

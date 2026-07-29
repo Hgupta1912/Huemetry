@@ -1,78 +1,63 @@
 import { Link, useLocation } from 'react-router';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext'; 
 
-const NAV_LINKS = [
-  { to: '/collections', label: 'Collections' },
-  { to: '/dashboard', label: 'Dashboard' },
-  { to: '/portfolio', label: 'Portfolio' },
-];
+const PAGE_TITLES: Record<string, string> = {
+  '/dashboard': 'Dashboard',
+  '/portfolio': 'Portfolio',
+  '/collections': 'Collections',
+  '/collections/new': 'New Collection',
+  '/discover': 'Discover Artists',
+  '/settings': 'Settings',
+  '/new-project': 'New Project',
+  '/analyze': 'Analyze Artwork',
+  '/login': 'Log In',
+  '/signup': 'Sign Up',
+};
+
+function getPageTitle(pathname: string): string {
+  if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname];
+  const match = Object.keys(PAGE_TITLES).find((path) => pathname.startsWith(path));
+  return match ? PAGE_TITLES[match] : 'Huemetry';
+}
 
 export default function Header() {
-  const { user, loading } = useAuth();
+  const { user, logout } = useAuth();
   const location = useLocation();
-
-  if (loading) {
-    return <header className="bg-magenta-true/50 px-4 py-3 h-[52px]" />;
-  }
 
   if (!user) {
     return (
-      <header className="bg-magenta-true/50 px-4 py-3 flex items-center justify-between">
-        <Link to="/" className="flex-shrink-0">
-          {/* placeholder — swap for a real logo SVG once you have one */}
-          <span className="font-display text-2xl uppercase text-ink">ArtLog</span>
-        </Link>
-
-        <div className="flex items-center gap-2">
-          <Link
-            to="/login"
-            className="px-4 py-1.5 font-display text-sm uppercase tracking-wide text-ink bg-cyan-true/50 active:bg-cyan-true/70"
-          >
-            Log in
-          </Link>
-          <Link
-            to="/signup"
-            className="px-4 py-1.5 font-display text-sm uppercase tracking-wide text-ink bg-yellow-true/50 active:bg-yellow-true/70"
-          >
-            Sign up
+      <>
+        <div className="bg-magenta-true/50 px-4 flex items-center justify-between" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)', paddingBottom: '12px' }}>
+          <Link to="/" className="flex items-center">
+            <img src="/logo.svg" alt="Huemetry" className="w-12 h-12 object-contain rounded-xl" />
+            <span className="font-display text-2xl uppercase text-ink ml-2">Huemetry</span>
           </Link>
         </div>
-      </header>
+        <div className="h-5 bg-gradient-to-b from-magenta-true/50 via-cyan-true/50 to-yellow-true/50" />
+      </>
     );
   }
 
   return (
-    <header className="bg-magenta-true/50 px-4 py-3 flex items-center justify-between gap-2">
-        <Link to="/dashboard" className="flex-shrink-0">
-        <div className="w-10 h-10 bg-yellow-true/50 overflow-hidden">
-            {/* placeholder avatar */}
+    <>
+      <div className="bg-magenta-true/50 px-4 flex items-center justify-between" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)', paddingBottom: '12px' }}>
+        <div className="flex items-center gap-2">
+          <Link to="/" className="flex-shrink-0">
+            <img src="/logo.svg" alt="Huemetry" className="w-12 h-12 object-contain rounded-xl" />
+          </Link>
+          <h1 className="font-display text-2xl uppercase text-ink">{getPageTitle(location.pathname)}</h1>
         </div>
-        </Link>
 
-        <nav className="flex items-center gap-2 overflow-x-auto">
-        {NAV_LINKS.map((link) => {
-            const isActive = location.pathname.startsWith(link.to);
-            return (
-            <Link
-                key={link.to}
-                to={link.to}
-                className={`px-4 py-1.5 font-display text-sm uppercase tracking-wide whitespace-nowrap text-ink transition-colors ${
-                isActive ? 'bg-cyan-true/50' : 'bg-yellow-true/50 active:bg-blend-red'
-                }`}
-            >
-                {link.label}
-            </Link>
-            );
-        })}
-
-        <Link
-            to="/settings"
-            className="w-9 h-9 flex-shrink-0 bg-cyan-true/50 flex items-center justify-center active:bg-blend-blue"
-            aria-label="Settings"
+        <button
+          type="button"
+          onClick={logout}
+          className="px-3 py-1.5 font-display text-xs uppercase tracking-wide text-ink bg-yellow-true/80 active:bg-blend-red transition-colors"
         >
-            ⚙️
-        </Link>
-        </nav>
-    </header>
+          Log out
+        </button>
+      </div>
+
+      <div className="h-5 bg-gradient-to-b from-magenta-true/50 via-cyan-true/50 to-yellow-true/50" />
+    </>
   );
 }

@@ -6,22 +6,26 @@ const createProject = (userId, data) =>
 const findProjectsByUser = (userId) =>
   prisma.project.findMany({
     where: { userId },
-    include: {
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      title: true,
+      mediums: true,
+      substrates: true,
+      isFinalized: true,
       artSessions: {
         orderBy: { loggedAt: 'desc' },
         take: 1,
-        include: { colors: true },
+        select: { imageUrl: true },
       },
-      reference: true,
     },
-    orderBy: { createdAt: 'desc' },
   });
 
 const findProjectById = (id, userId) =>
   prisma.project.findFirst({
     where: { id, userId },
     include: {
-      artSessions: { include: { colors: true } },
+      artSessions: { orderBy: { loggedAt: 'desc' }, include: { colors: true } },
       reference: { include: { colors: true } },
     },
   });
@@ -61,6 +65,12 @@ const updateArtSession = (id, projectId, data) =>
     where: { id, projectId },
     data,
   });
+
+const updateArtSessionComparison = (id, comparedToReference) =>
+prisma.artSession.update({
+  where: { id },
+  data: { comparedToReference },
+});
 
 // For updates that need to REPLACE the session's colors (i.e. a new image
 // was uploaded and the palette was recomputed). Uses singular `update` by
@@ -122,7 +132,7 @@ const findCollectionById = (id, userId) =>
     include: {
       projects: {
         include: {
-          artSessions: { include: { colors: true } },
+          artSessions: { include: { colors: true }, orderBy: { loggedAt: 'desc' }},
           reference: { include: { colors: true } },
         },
       },
@@ -139,17 +149,25 @@ const deleteCollection = (id, userId) =>
     where: { id, userId },
   });
 
-const addProjectToCollection = (collectionId, projectId, userId) =>
-  prisma.collection.updateMany({
-    where: { id: collectionId, userId },
+const addProjectToCollection = async (collectionId, projectId, userId) => {
+  const collection = await prisma.collection.findFirst({ where: { id: collectionId, userId } });
+  if (!collection) return null;
+
+  return prisma.collection.update({
+    where: { id: collectionId },
     data: { projects: { connect: { id: projectId } } },
   });
+};
 
-const removeProjectFromCollection = (collectionId, projectId, userId) =>
-  prisma.collection.updateMany({
-    where: { id: collectionId, userId },
+const removeProjectFromCollection = async (collectionId, projectId, userId) => {
+  const collection = await prisma.collection.findFirst({ where: { id: collectionId, userId } });
+  if (!collection) return null;
+
+  return prisma.collection.update({
+    where: { id: collectionId },
     data: { projects: { disconnect: { id: projectId } } },
   });
+}
 
 const findUserByEmail = async (email) => prisma.user.findUnique({ where: { email } });
 const findUserByUsername = async (username) => prisma.user.findUnique({ where: { username } });
@@ -187,6 +205,37 @@ const findPublicUserByUsername = (username) =>
     },
   });
 
+const findPublicProjectDetail = (userId, projectId) =>
+  prisma.project.findFirst({
+    where: {
+      id: projectId,
+      userId,
+      isFinalized: true,
+      isPublic: true,
+    },
+    include: {
+      artSessions: { include: { colors: true }, orderBy: { loggedAt: 'desc' }, },
+      reference: { include: { colors: true } },
+    },
+});
+
+const findPublicReferenceByUserId = (userId, projectId) =>
+  prisma.reference.findFirst({
+    where: {
+      project: { id: projectId, userId, isFinalized: true, isPublic: true },
+    },
+    include: { colors: true },
+  });
+
+const findPublicArtSessionByUserId = (userId, projectId, sessionId) =>
+  prisma.artSession.findFirst({
+    where: {
+      id: sessionId,
+      project: { id: projectId, userId, isFinalized: true, isPublic: true },
+    },
+    include: { colors: true },
+  });
+
 const updateUser = (id, data) =>
   prisma.user.update({
     where: { id },
@@ -207,6 +256,11 @@ const findPublicUsers = () =>
         select: {
           id: true,
           title: true,
+          mediums: true,
+          substrates: true,
+          genres: true,
+          collaborators: true,
+          dimensions: true,
           artSessions: {
             where: { isFinal: true },
             orderBy: { loggedAt: 'desc' },
@@ -231,6 +285,7 @@ module.exports = {
   findArtSessionsByProject,
   findArtSessionById,
   updateArtSession,
+  updateArtSessionComparison,
   replaceArtSessionColors,
   deleteArtSession,
   createReference,
@@ -250,6 +305,9 @@ module.exports = {
   createUser,
   findUserById,
   findPublicUserByUsername,
+  findPublicProjectDetail,
+  findPublicReferenceByUserId,
+  findPublicArtSessionByUserId,
   updateUser,
   findPublicUsers
 };

@@ -28,16 +28,16 @@ const processImage = async (buffer, project) => {
     : flattenPalettesToColorRows(extractPalette(pixels));
 
   let comparedToReference = null;
-  if (project.isRealism && !project.isMonochrome) {
+  if (project.isRealism) {
     const reference = await findReferenceByProject(project.id);
     if (reference && reference.statistics) {
       comparedToReference = compareToReference(
         {
-          palettes: groupColorsByTonalRange(reference.colors),
+          palettes: reference.colors?.length > 0 ? groupColorsByTonalRange(reference.colors) : null,
           statistics: reference.statistics,
         },
         {
-          palettes: groupColorsByTonalRange(colorsData),
+          palettes: colorsData.length > 0 ? groupColorsByTonalRange(colorsData) : null,
           statistics,
         },
       );

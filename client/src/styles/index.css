@@ -14,4 +14,20 @@
 
   --color-surface: #FAFAF7;
   --color-ink: #0A0A0A;
+
+  --animate-slide-in-right: slide-in-right 0.30s ease-out;
+  --animate-slide-in-left: slide-in-left 0.30s ease-out;
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(300px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slide-in-left {
+  from { transform: translateX(-300px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.app-header {
+  padding-top: env(safe-area-inset-top, 0px);
 }
