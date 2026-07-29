@@ -130,7 +130,7 @@ Visit the local URL Vite prints (usually `http://localhost:5173`), and remember 
 
 ---
 
-## Known limitations / future work
+## Known limitations / future work (test new sync)
 
 - Portfolio-level and collection-level analytics are not yet built (only individual session and project analytics currently exist).
 - Ridgeline plots (showing how color-distribution shape changes over time) are planned but not yet implemented.
