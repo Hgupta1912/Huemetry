@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { useAuth } from '../context/AuthContext'; 
 
 const PAGE_TITLES: Record<string, string> = {
@@ -28,8 +28,10 @@ export default function Header() {
     return (
       <>
         <div className="bg-magenta-true/50 px-4 flex items-center justify-between" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)', paddingBottom: '12px' }}>
-          <img src="/logo.svg" alt="Huemetry" className="w-12 h-12 object-contain rounded-xl" />
-          <span className="font-display text-2xl uppercase text-ink ml-2">Huemetry</span>
+          <Link to="/" className="flex items-center">
+            <img src="/logo.svg" alt="Huemetry" className="w-12 h-12 object-contain rounded-xl" />
+            <span className="font-display text-2xl uppercase text-ink ml-2">Huemetry</span>
+          </Link>
         </div>
         <div className="h-5 bg-gradient-to-b from-magenta-true/50 via-cyan-true/50 to-yellow-true/50" />
       </>
@@ -40,7 +42,9 @@ export default function Header() {
     <>
       <div className="bg-magenta-true/50 px-4 flex items-center justify-between" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)', paddingBottom: '12px' }}>
         <div className="flex items-center gap-2">
-          <img src="/logo.svg" alt="Huemetry" className="w-12 h-12 object-contain rounded-xl" />
+          <Link to="/" className="flex-shrink-0">
+            <img src="/logo.svg" alt="Huemetry" className="w-12 h-12 object-contain rounded-xl" />
+          </Link>
           <h1 className="font-display text-2xl uppercase text-ink">{getPageTitle(location.pathname)}</h1>
         </div>
 
