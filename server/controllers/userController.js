@@ -6,6 +6,9 @@ const {
   findProjectsByUser,
   findCollectionsByUser,
   updateUser,
+  findPublicProjectDetail,
+  findPublicArtSessionByUserId,
+  findPublicReferenceByUserId
 } = require('../db/queries.js');
 
 const getMe = async (req, res, next) => {
@@ -44,22 +47,6 @@ const updateMe = async (req, res, next) => {
       username: updated.username,
       isPublic: updated.isPublic,
     });
-  } catch (err) {
-    next(err);
-  }
-};
-
-const getDashboard = async (req, res, next) => {
-  try {
-    const user = await findUserById(req.user.userId);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    const projects = await findProjectsByUser(req.user.userId);
-    const collections = await findCollectionsByUser(req.user.userId);
-
-    res.status(200).json({ user, projects, collections });
   } catch (err) {
     next(err);
   }
@@ -107,4 +94,62 @@ const getPublicProfile = async (req, res, next) => {
   }
 };
 
-module.exports = { getMe, updateMe, getDashboard, getDiscoverArtists, getPublicProfile };
+const getPublicProjectDetail = async (req, res, next) => {
+  try {
+    const user = await findPublicUserByUsername(req.params.username);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const project = await findPublicProjectDetail(user.id, Number(req.params.projectId));
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    res.status(200).json(project);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getPublicArtSession = async (req, res, next) => {
+  try {
+    const user = await findPublicUserByUsername(req.params.username);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const session = await findPublicArtSessionByUserId(
+      user.id,
+      Number(req.params.projectId),
+      Number(req.params.sessionId),
+    );
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    res.status(200).json(session);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getPublicReference = async (req, res, next) => {
+  try {
+    const user = await findPublicUserByUsername(req.params.username);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const reference = await findPublicReferenceByUserId(user.id, Number(req.params.projectId));
+    if (!reference) {
+      return res.status(404).json({ error: 'Reference not found' });
+    }
+
+    res.status(200).json(reference);
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { getMe, updateMe, getDiscoverArtists, getPublicProfile, getPublicProjectDetail, getPublicArtSession, getPublicReference };

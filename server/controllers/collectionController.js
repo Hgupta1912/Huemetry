@@ -91,7 +91,7 @@ const addProject = async (req, res, next) => {
     }
 
     const result = await addProjectToCollection(Number(req.params.id), projectId, req.user.userId);
-    if (result.count === 0) {
+    if (!result) {
       return res.status(404).json({ error: 'Collection not found' });
     }
 
@@ -109,7 +109,7 @@ const removeProject = async (req, res, next) => {
       Number(req.params.projectId),
       req.user.userId
     );
-    if (result.count === 0) {
+    if (!result) {
       return res.status(404).json({ error: 'Collection not found' });
     }
 

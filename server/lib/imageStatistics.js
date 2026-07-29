@@ -39,6 +39,10 @@ const summarizeDistribution = (values) => {
   const lowerFence = q1 - 1.5 * iqr;
   const upperFence = q3 + 1.5 * iqr;
 
+  const nonOutliers = sorted.filter((v) => v >= lowerFence && v <= upperFence);
+  const whiskerLow = nonOutliers.length > 0 ? nonOutliers[0] : q1;
+  const whiskerHigh = nonOutliers.length > 0 ? nonOutliers[nonOutliers.length - 1] : q3;
+
   const outliers = sorted.filter((v) => v < lowerFence || v > upperFence);
 
   return {
@@ -49,6 +53,8 @@ const summarizeDistribution = (values) => {
     max: sorted[sorted.length - 1],
     lowerFence,
     upperFence,
+    whiskerLow,  
+    whiskerHigh, 
     outliers: summarizeOutliers(outliers, lowerFence, upperFence),
     theoreticalMin: 0,
     theoreticalMax: 100,

@@ -1,6 +1,8 @@
 const { getPixelData } = require('../lib/imageProcessing.js');
-const { extractPalette, flattenPalettesToColorRows } = require('../lib/extractPalette.js');
+const { extractPalette, flattenPalettesToColorRows, groupColorsByTonalRange } = require('../lib/extractPalette.js');
 const { computeImageStatistics } = require('../lib/imageStatistics.js');
+const { compareToReference } = require('../lib/compareToReference.js');
+
 const {
   createProject,
   findProjectsByUser,
@@ -12,11 +14,37 @@ const {
   updateReference,
   replaceReferenceColors,
   deleteReference,
+  findArtSessionsByProject,
+  updateArtSessionComparison
 } = require('../db/queries.js');
 const { uploadImageBuffer } = require('../lib/cloudinary.js');
 
 
 const ALLOWED_MODES = ['retrospective', 'progressive'];
+
+//helper for when reference is switched or deleted midway
+const recalculateAllSessionComparisons = async (projectId, reference) => {
+  const sessions = await findArtSessionsByProject(projectId);
+
+  for (const session of sessions) {
+    if (!session.statistics) continue;
+
+    const comparedToReference = reference
+      ? compareToReference(
+          {
+            palettes: reference.colors?.length > 0 ? groupColorsByTonalRange(reference.colors) : null,
+            statistics: reference.statistics,
+          },
+          {
+            palettes: session.colors?.length > 0 ? groupColorsByTonalRange(session.colors) : null,
+            statistics: session.statistics,
+          },
+        )
+      : null;
+
+    await updateArtSessionComparison(session.id, comparedToReference);
+  }
+};
 
 const create = async (req, res, next) => {
   try {
@@ -118,6 +146,7 @@ const update = async (req, res, next) => {
 
     if (isRealism === false) {
       await deleteReference(Number(req.params.id));
+      await recalculateAllSessionComparisons(Number(req.params.id), null);
     }
 
     const updated = await findProjectById(Number(req.params.id), req.user.userId);
@@ -166,6 +195,8 @@ const uploadReference = async (req, res, next) => {
       colorsData,
       statistics,
     );
+
+    await recalculateAllSessionComparisons(project.id, { colors: colorsData, statistics });
 
     const final = await findReferenceByProject(project.id);
 
@@ -217,6 +248,9 @@ const editReference = async (req, res, next) => {
       colorsData,
     );
 
+    await recalculateAllSessionComparisons(project.id, { colors: colorsData, statistics });
+
+
     res.status(200).json(reference);
   } catch (err) {
     next(err);
@@ -234,6 +268,8 @@ const removeReference = async (req, res, next) => {
     if (result.count === 0) {
       return res.status(404).json({ error: 'Reference not found' });
     }
+
+    await recalculateAllSessionComparisons(project.id, null);
 
     res.status(204).send();
   } catch (err) {

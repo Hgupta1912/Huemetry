@@ -4,6 +4,9 @@ import { RouterProvider, createBrowserRouter } from 'react-router';
 import { AuthProvider } from './context/AuthContext.tsx';
 import routes from './routes.tsx';
 import './styles/index.css';
+import { registerSW } from 'virtual:pwa-register';
+
+registerSW({ immediate: true });
 
 const router = createBrowserRouter(routes);
 

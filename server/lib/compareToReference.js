@@ -92,6 +92,8 @@ const compareScalar = (wipValue, referenceValue) => {
 // comparison is palette-matching only; scalar (saturation/value/temperature)
 // deltas are computed overall only, since computeImageStatistics doesn't
 // break box-plot stats down per tonal range.
+const paletteEmpty = { overall: null, shadow: null, midtone: null, highlight: null };
+
 const compareToReference = (reference, wip) => {
   const saturation =
     reference.statistics?.saturation && wip.statistics?.saturation
@@ -108,18 +110,16 @@ const compareToReference = (reference, wip) => {
       ? compareScalar(wip.statistics.temperature.score, reference.statistics.temperature.score)
       : null;
 
-  return {
-    //possibly remove shadow/midtone/highlight from returned comparative stats
-    palette: {
-      overall: matchPalettes(reference.palettes.overall, wip.palettes.overall),
-      shadow: matchPalettes(reference.palettes.shadow, wip.palettes.shadow),
-      midtone: matchPalettes(reference.palettes.midtone, wip.palettes.midtone),
-      highlight: matchPalettes(reference.palettes.highlight, wip.palettes.highlight),
-    },
-    saturation,
-    value,
-    temperature,
-  };
+  const palette = reference.palettes && wip.palettes
+    ? {
+        overall: matchPalettes(reference.palettes.overall, wip.palettes.overall),
+        shadow: matchPalettes(reference.palettes.shadow, wip.palettes.shadow),
+        midtone: matchPalettes(reference.palettes.midtone, wip.palettes.midtone),
+        highlight: matchPalettes(reference.palettes.highlight, wip.palettes.highlight),
+      }
+    : paletteEmpty;
+
+    return { palette, saturation, value, temperature };
 };
 
 module.exports = { compareToReference };
