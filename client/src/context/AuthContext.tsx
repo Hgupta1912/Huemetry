@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { apiRequest } from '../utils/api';
+import ServerWakingPage from '../pages/ServerWakingPage';
 
 interface User {
   id: number;
@@ -34,6 +35,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoading(false));
   }, []);
 
+
+
+
+
   const login = async (email: string, password: string) => {
     const data = await apiRequest('/api/auth/login', {
       method: 'POST',
@@ -59,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
-      {children}
+      {loading ? <ServerWakingPage /> : children}
     </AuthContext.Provider>
   );
 }

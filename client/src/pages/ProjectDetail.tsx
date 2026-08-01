@@ -336,7 +336,7 @@ const hoursData = sorted.map((s) => ({
           {saturationDeltaTrend.length > 0 && (
             <div>
               <p className="text-sm font-semibold text-ink text-center mb-1">Saturation Fidelity to Reference Over Time</p>
-              <TrendLine data={saturationDeltaTrend} label="Saturation Delta" color="#00FFFF" />
+              <TrendLine data={saturationDeltaTrend} label="Saturation Delta" color="#0fe1e1d9" />
             </div>
           )}
           <p className="text-xs text-gray-500 text-center">
@@ -344,7 +344,7 @@ const hoursData = sorted.map((s) => ({
           </p>
           <div>
             <p className="text-sm font-semibold text-ink text-center mb-1">Value Fidelity to Reference Over Time</p>
-            <TrendLine data={valueDeltaTrend} label="Value Delta" color="#FF00FF" />
+            <TrendLine data={valueDeltaTrend} label="Value Delta" color="#d613d6df" />
           </div>
         </div>
       )}

@@ -27,7 +27,7 @@ export default function Header() {
   if (!user) {
     return (
       <>
-        <div className="bg-magenta-true/50 px-4 flex items-center justify-between" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)', paddingBottom: '12px' }}>
+        <div className="bg-magenta-true/50 px-4 flex items-center justify-between" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4px)', paddingBottom: '12px' }}>
           <Link to="/" className="flex items-center">
             <img src="/logo.svg" alt="Huemetry" className="w-12 h-12 object-contain rounded-xl" />
             <span className="font-display text-2xl uppercase text-ink ml-2">Huemetry</span>
@@ -40,7 +40,7 @@ export default function Header() {
 
   return (
     <>
-      <div className="bg-magenta-true/50 px-4 flex items-center justify-between" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)', paddingBottom: '12px' }}>
+      <div className="bg-magenta-true/50 px-4 flex items-center justify-between" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4px)', paddingBottom: '12px' }}>
         <div className="flex items-center gap-2">
           <Link to="/" className="flex-shrink-0">
             <img src="/logo.svg" alt="Huemetry" className="w-12 h-12 object-contain rounded-xl" />

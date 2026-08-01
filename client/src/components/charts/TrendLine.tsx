@@ -14,7 +14,7 @@ interface TrendLineProps {
   referenceLabel?: string;
 }
 
-export default function TrendLine({ data, label, domain, color = '#00FFFF', referenceValue, referenceLabel }: TrendLineProps) {
+export default function TrendLine({ data, label, domain, color = '#0fe1e1d9', referenceValue, referenceLabel }: TrendLineProps) {
   return (
     <LineChart data={data} style={{ width: '100%', maxHeight: '50vh', aspectRatio: 1.618 }} responsive margin={{ top: 10, right: 10, bottom: 20, left: 10 }}>
       <CartesianGrid horizontal vertical={false} strokeDasharray="3 3" />
@@ -36,9 +36,9 @@ export default function TrendLine({ data, label, domain, color = '#00FFFF', refe
       {referenceValue != null && (
         <ReferenceLine
           y={referenceValue}
-          stroke="#FF00FF"
+          stroke="#d613d6df"
           strokeDasharray="4 4"
-          label={{ value: referenceLabel ?? 'Reference', position: 'right', fontSize: 10, fill: '#FF00FF' }}
+          label={{ value: referenceLabel ?? 'Reference', position: 'right', fontSize: 10, fill: '#d613d6df' }}
         />
       )}
     </LineChart>

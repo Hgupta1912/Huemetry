@@ -51,7 +51,7 @@ export default function Histogram({ bins, compareBins, binWidth, label, compareL
             }}
         />
         <YAxis domain={[0, maxCount]} width={20} tick={false} axisLine={false} tickLine={false} />
-        <Bar dataKey="value" name={label} fill="#00FFFF" fillOpacity={0.5} />
+        <Bar dataKey="value" name={label} fill="#0fe1e1d9" fillOpacity={0.5} />
       </BarChart>
 
       {compareData && (
@@ -59,7 +59,7 @@ export default function Histogram({ bins, compareBins, binWidth, label, compareL
           <BarChart data={compareData} style={{ width: '100%', height: '100%' }} responsive margin={CHART_MARGIN}>
             <XAxis dataKey="range" tick={false} axisLine={false} tickLine={false} />
             <YAxis domain={[0, maxCount]} width={20} tick={false} axisLine={false} tickLine={false} />
-            <Bar dataKey="value" name={compareLabel} fill="#FF00FF" fillOpacity={0.5} />
+            <Bar dataKey="value" name={compareLabel} fill="#d613d6df" fillOpacity={0.5} />
           </BarChart>
         </div>
       )}

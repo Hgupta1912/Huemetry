@@ -68,7 +68,7 @@ const BoxShape = (props: BarShapeProps) => {
   return (
     <g>
       {/* the box itself: a plain rectangle at the exact pixel rect Recharts computed */}
-      <rect x={props.x} y={props.y} width={props.width} height={props.height} fill="#00ffff" fillOpacity={0.5} />
+      <rect x={props.x} y={props.y} width={props.width} height={props.height} fill="#0fe1e1d9" fillOpacity={0.5} />
       {/* the median line, spanning the box's full width at its calculated vertical position */}
       <line x1={props.x} x2={props.x + props.width} y1={medianY} y2={medianY} stroke="#0A0A0A" strokeWidth={2} />
     </g>

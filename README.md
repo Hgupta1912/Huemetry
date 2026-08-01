@@ -1,6 +1,6 @@
 # Huemetry
 
-**Live app:** [placeholder — add your deployed Netlify URL here once live]
+**Live app:** [Click Here](https://huemetry.netlify.app/)
 
 Huemetry is a color analytics platform for visual artists. Log your art as it develops, and get back quantitative insight into your palette; tonal range; hue, saturation, and value statistics; and comparative statistics against a reference photo if desired.
 
@@ -10,13 +10,10 @@ This is partly powered by a self-implemented adaptive saliency weighted k-means+
 
 ---
 
-## Screenshots
+## Installing it on your phone
 
-*(placeholders)
-
-| Dashboard | Session Analytics | Discover Artists |
-|---|---|---|
-| ![Dashboard](./screenshots/dashboard.png) | ![Session Analytics](./screenshots/session-analytics.png) | ![Discover Artists](./screenshots/discover.png) |
+- **iPhone (Safari):** open the live link above in Safari, tap the Share button, then "Add to Home Screen."
+- **Android (Chrome):** open the live link, tap the three-dot menu, then "Add to Home Screen" or "Install app" (Chrome may also prompt you automatically).
 
 ---
 
@@ -29,6 +26,7 @@ This is partly powered by a self-implemented adaptive saliency weighted k-means+
 - **Full statistical + visual analytics**, per session and cumulative per project: box plots, histograms, palette breakdowns, temperature (warmth/coolness) scoring, and trend lines over time (all built from scratch on top of Recharts, since no charting library ships a box-plot component out of the box).
 - **A free, no-signup analyzer.** Anyone can upload a single image and get instant palette/statistics feedback with zero account required.
 - **A social layer.** Public profiles, portfolios, a discovery feed for browsing other artists' public work, and collections for grouping your own projects into series.
+- **Installable as a home-screen app.** Huemetry is a fully configured PWA. Add it to your phone's home screen for a native-app-like, full-screen experience.
 
 ---
 
@@ -56,7 +54,7 @@ This is partly powered by a self-implemented adaptive saliency weighted k-means+
   - "Snap to real pixel" post-processing, so every reported color is a genuine color that exists in the image, never a synthetic average that was never actually present
   - Over-clustering + Delta E76-based consolidation, merging near-duplicate results and pruning weak clusters by a saturation/weight score
 - Single-pass statistical summarization (box-plot quartiles/fences/outliers via linear-interpolation percentiles, histograms, hue-based warmth scoring) computed directly from raw pixel data
-- `culori` used only for the well-established, solved RGB↔LAB color-space conversion math — deliberately not hand-rolled, since that's a standard formula, not part of the app's own algorithm design
+- `culori` used only for the well-established, solved RGB↔LAB color-space conversion math; deliberately not hand-rolled, since that's a standard formula, not part of the app's own algorithm design
 
 **Deployment**
 - Frontend: Netlify
@@ -121,19 +119,30 @@ Visit the local URL Vite prints (usually `http://localhost:5173`), and remember 
 
 ## Deploying your own copy
 
-1. **Database (Neon):** create a free Neon Postgres project, copy the connection string into your Render environment variables as `DATABASE_URL`.
-2. **Backend (Render):** create a new Web Service pointing at the `server/` folder of this repo. Set the same environment variables listed above (`DATABASE_URL`, `JWT_SECRET`, Cloudinary keys, `FRONTEND_URL` set to your eventual Netlify URL). Render will run `npm install` and `npm start` automatically — confirm your `package.json` has a `start` script.
-3. **Frontend (Netlify):** create a new site pointing at the `client/` folder. Set `VITE_API_URL` to your Render backend's URL in Netlify's environment variables. Build command: `npm run build`; publish directory: `dist`.
-4. **Update CORS:** make sure your backend's `FRONTEND_URL` env var exactly matches your live Netlify URL (no trailing slash), or requests from the deployed frontend will be blocked.
+1. **Database (Neon):** create a free Neon Postgres project and copy its connection string.
+2. **Apply migrations to the production database**, from your local machine, before your first backend deploy:
+```bash
+   cd server
+   DATABASE_URL="your_neon_connection_string" npx prisma migrate deploy
+```
+3. **Backend (Render):** create a new Web Service pointing at the `server/` folder of this repo.
+   - **Build command:** `npm install && npx prisma generate && npx prisma migrate deploy`
+   - **Start command:** `npm start`
+   - **Environment variables:** `DATABASE_URL` (from step 1), `JWT_SECRET`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, and `FRONTEND_URL` (leave as a placeholder for now; you'll update it in step 5).
+4. **Frontend (Netlify):** create a new site pointing at the `client/` folder.
+   - **Build command:** `npm run build`
+   - **Publish directory:** `dist`
+   - **Environment variables:** `VITE_API_URL` set to your Render backend's URL from step 3 (e.g. `https://your-app.onrender.com`).
+5. **Close the loop:** go back to Render and update `FRONTEND_URL` to your live Netlify URL from step 4 (no trailing slash; CORS does an exact match). Redeploy the backend if it doesn't happen automatically.
 
-**Known tradeoff:** the backend is deployed on Render's free tier, which spins down after inactivity — the first request after a period of no traffic can take up to a minute or so to wake back up. Subsequent requests are fast. This is a deliberate, accepted tradeoff for a free-tier personal project, not a bug.
+**Known tradeoff:** the backend is deployed on Render's free tier, which spins down after inactivity. The first request after a period of no traffic can take up to a minute or so to wake back up. Subsequent requests are fast. This is a deliberate, accepted tradeoff for a free-tier personal project, not a bug.
 
 ---
 
-## Known limitations / future work (test new sync)
+## Known limitations / future work
 
 - Portfolio-level and collection-level analytics are not yet built (only individual session and project analytics currently exist).
 - Ridgeline plots (showing how color-distribution shape changes over time) are planned but not yet implemented.
 - Account deletion is not yet implemented.
-- This is a PWA-in-progress — installable home-screen support is planned but not yet wired up.
-- The color-extraction algorithm involves randomized initialization (k-means++), so re-analyzing the exact same image can occasionally produce very slightly different results between runs — this is flagged directly in the UI wherever comparative statistics are shown.
+- The color-extraction algorithm involves randomized initialization (k-means++), so re-analyzing the exact same image can occasionally produce very slightly different results between runs.
+- And so much more!

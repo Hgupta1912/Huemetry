@@ -21,7 +21,7 @@ export default function Footer() {
     return (
       <>
         <div className="h-5 bg-gradient-to-t from-magenta-true/50 via-cyan-true/50 to-yellow-true/50" />
-        <footer className="bg-magenta-true/50 px-4 flex items-center justify-between" style={{ paddingTop: '8px', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}>
+        <footer className="bg-magenta-true/50 px-4 flex items-center justify-between" style={{ paddingTop: '8px', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 2px)' }}>
           <Link to="/" className="flex-shrink-0">
             <span className="font-display text-2xl uppercase text-ink">ArtLog</span>
           </Link>
@@ -48,7 +48,7 @@ export default function Footer() {
   return (
     <>
       <div className="h-5 bg-gradient-to-t from-magenta-true/50 via-cyan-true/50 to-yellow-true/50" />
-      <footer className="bg-magenta-true/50 px-2 flex items-center justify-between" style={{ paddingTop: '8px', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}>
+      <footer className="bg-magenta-true/50 px-2 flex items-center justify-between" style={{ paddingTop: '8px', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 2px)' }}>
         {NAV_LINKS.map((link) => {
           const isActive = location.pathname.startsWith(link.to);
           return (

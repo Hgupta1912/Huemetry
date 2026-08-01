@@ -44,8 +44,8 @@ export default function Dashboard() {
   if (error) return <ErrorPage title="Something went wrong" message="We're having trouble loading your dashboard." />;
 
   return (
-    <main className="flex flex-col h-[calc(100vh-52px)]">
-        <section className="flex-[2] flex flex-col min-h-0">
+    <main className="flex flex-col overflow-y-auto h-full">
+      <section className="flex-[2.5] flex flex-col min-h-0">
         <div className="flex items-center justify-between bg-surface px-4 pt-4 pb-2 z-10 relative">
             <h1 className="font-display text-3xl uppercase text-ink">Projects</h1>
             <Link
@@ -56,7 +56,7 @@ export default function Dashboard() {
             </Link>
         </div>
 
-        <div className="overflow-y-auto px-4 pb-4 min-h-0">
+        <div className="overflow-y-auto px-4 pb-4 min-h-0 h-full">
             {projects.length === 0 ? (
             <p className="text-gray-500 text-sm">No projects yet. Start your first one!</p>
             ) : (
@@ -76,9 +76,9 @@ export default function Dashboard() {
             </div>
             )}
         </div>
-        </section>
+      </section>
 
-      <section className="flex-1 overflow-y-auto px-4 pt-4 pb-24 min-h-0">
+      <section className="flex-1 px-4 pt-4 pt-7 min-h-0">
         <div className="flex items-center justify-between sticky top-0 z-10 bg-surface pb-2 mb-4">
           <h2 className="font-display text-2xl uppercase text-ink">Discover Artists</h2>
           <Link to="/discover" className="text-xs text-gray-600 underline">
@@ -86,11 +86,11 @@ export default function Dashboard() {
           </Link>
         </div>
 
-        <div className="overflow-y-auto px-4 pb-24 min-h-0">
+        <div className="px-4 pb-4 min-h-0">
             {artists.length === 0 ? (
             <p className="text-gray-500 text-sm">No public artists yet.</p>
             ) : (
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 overflow-y-auto">
                 {artists.map((artist, index) => (
                 <Link
                     key={artist.id}

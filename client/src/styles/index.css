@@ -4,9 +4,9 @@
   --font-display: 'Staatliches', sans-serif;
   --font-body: 'Inter', sans-serif;
 
-  --color-cyan-true: #00FFFF;
-  --color-magenta-true: #FF00FF;
-  --color-yellow-true: #FFFF00;
+  --color-cyan-true: #0AF0F0;
+  --color-magenta-true: #ED0CED;
+  --color-yellow-true: #F5F505;
 
   --color-blend-blue: #7EBEFD;
   --color-blend-green: #BEFE7E;
@@ -30,4 +30,8 @@
 
 .app-header {
   padding-top: env(safe-area-inset-top, 0px);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
 }

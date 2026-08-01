@@ -99,7 +99,7 @@ export default function Portfolio() {
         <Link
           to={detailHref}
           key={project.id}
-          className={`w-full h-full flex flex-col items-start overflow-y-auto overflow-x-hidden ${
+          className={`w-full h-full flex flex-col items-center overflow-y-auto overflow-x-hidden ${
             hasInteracted ? (direction === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left') : ''
           }`}
         >

@@ -10,7 +10,7 @@ interface TimeBarDatum {
 const TimeBar = (props: BarShapeProps) => {
   // @ts-expect-error — Recharts spreads the datum onto shape props at runtime
   const entry: TimeBarDatum = props;
-  const fill = entry.hasData ? '#00FFFF' : '#FE7EBE';
+  const fill = entry.hasData ? '#0fe1e1d9' : '#d613d6df';
 
   return (
     <g>
