@@ -9,9 +9,12 @@ export default function Home() {
         <div className="absolute top-8 right-1/4 w-28 h-28 bg-magenta-true/50" />
         <div className="absolute top-14 left-1/3 w-26 h-26 bg-yellow-true/50" />
 
-        <h1 className="relative font-display text-5xl uppercase text-ink leading-tight mb-4">
-          Art<br />Log
-        </h1>
+        <br/>
+        <br/>        
+        <br/>        
+        <br/>                
+        <br/>        
+        <br/>
         <p className="relative text-gray-600 max-w-sm">
           Upload any piece and instantly see its color palette and tonal breakdown; hue, saturation,
           and value statistics, and more.<br/>Built by artists for artists.
