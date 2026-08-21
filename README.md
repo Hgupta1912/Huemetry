@@ -30,6 +30,14 @@ This is partly powered by a self-implemented adaptive saliency weighted k-means+
 
 ---
 
+## Screenshots
+
+![Dashboard](https://res.cloudinary.com/c5esjfra/image/upload/v1787355258/IMG_4375.png)
+![Session Analytics Example](https://res.cloudinary.com/c5esjfra/image/upload/v1787355258/IMG_4377.png)
+![Project Analytics Example](https://res.cloudinary.com/c5esjfra/image/upload/v1787355258/IMG_4378.png)
+
+___
+
 ## Tech stack
 
 **Frontend**
