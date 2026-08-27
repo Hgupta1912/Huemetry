@@ -1,5 +1,6 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
+//make an api request!
 export async function apiRequest(path: string, options: RequestInit = {}) {
   const token = localStorage.getItem('token');
   const headers: Record<string, string> = {
