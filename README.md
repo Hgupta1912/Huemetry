@@ -165,4 +165,5 @@ Visit the local URL Vite prints (usually `http://localhost:5173`), and remember 
 - Ridgeline plots (showing how color-distribution shape changes over time) are planned but not yet implemented.
 - Account deletion is not yet implemented.
 - The color-extraction algorithm involves randomized initialization (k-means++), so re-analyzing the exact same image can occasionally produce very slightly different results between runs.
+- This will soon be deployed via AWS with CI/CD done by GitHub Actions; there will also be containerization of this app with Docker soon!
 - And so much more!
