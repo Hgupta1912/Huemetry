@@ -4,6 +4,12 @@ export default function Home() {
   return (
     <main className="flex flex-col items-center px-6 pt-3 text-center overflow-y-auto h-full">
 
+      <div>
+        {/* make this look pretty*/}
+        <p className='text-gray-600 max-w-sm'> For the best user experience, this app works best from your homescreen rather than your browser.</p>
+        <p className='text-gray-600 max-w-sm'>To install this app, you must: On iPhone (Safari): tap the three dots, tap the Share button, then "Add to Home Screen." On Android (Chrome): tap the three-dot menu, then "Add to Home Screen" or "Install app" (Chrome may prompt you automatically).</p>
+      </div>
+
       <div className="relative w-full flex flex-col items-center pt-12 pb-8">
         <div className="absolute top-1 left-1/4 w-32 h-32 bg-cyan-true/50" />
         <div className="absolute top-8 right-1/4 w-28 h-28 bg-magenta-true/50" />
