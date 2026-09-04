@@ -1,14 +1,35 @@
 import { Link } from 'react-router';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
+  const [showInstallHint, setShowInstallHint] = useState(false);
+
+  useEffect(() => {
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true;
+    setShowInstallHint(!isStandalone);
+  }, []);
+
+  const isIOS =
+  typeof navigator !== "undefined" &&
+  (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
+
+
   return (
     <main className="flex flex-col items-center px-6 pt-3 text-center overflow-y-auto h-full">
 
-      <div>
-        {/* make this look pretty*/}
-        <p className='text-gray-600 max-w-sm'> For the best user experience, this app works best from your homescreen rather than your browser.</p>
-        <p className='text-gray-600 max-w-sm'>To install this app, you must: On iPhone (Safari): tap the three dots, tap the Share button, then "Add to Home Screen." On Android (Chrome): tap the three-dot menu, then "Add to Home Screen" or "Install app" (Chrome may prompt you automatically).</p>
-      </div>
+      {showInstallHint && (
+        <div className="w-full bg-yellow-true/30 px-4 py-3 mb-4 relative">
+          <p className="text-xs text-ink pr-4">
+            For the intended experience, add Huemetry to your home screen.
+            {isIOS
+              ? ' Safari → (…) → Share → View More → Add to Home Screen → Add'
+              : ' Chrome → (…) → Install and Create Shortcut → Install → follow the prompts'}
+          </p>
+        </div>
+      )}
 
       <div className="relative w-full flex flex-col items-center pt-12 pb-8">
         <div className="absolute top-1 left-1/4 w-32 h-32 bg-cyan-true/50" />
